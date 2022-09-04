@@ -119,7 +119,11 @@ export default class DataHandler {
       case "message":
         if (this.redis.listeners("message").length > 0) {
           // Check if there're listeners to avoid unnecessary `toString()`.
-          this.redis.emit("message", reply[1].toString(), reply[2] ? reply[2].toString() : '');
+          this.redis.emit(
+            "message",
+            reply[1].toString(),
+            reply[2] ? reply[2].toString() : ""
+          );
         }
         this.redis.emit("messageBuffer", reply[1], reply[2]);
         break;
@@ -156,7 +160,8 @@ export default class DataHandler {
           this.redis.condition.subscriber.del(replyType, channel);
         }
         const count = reply[2];
-        if (count === 0) {
+        // fix ioredis#1643 by qii404, unsub failed when stringNumbers is true
+        if (count == 0) {
           this.redis.condition.subscriber = false;
         }
         const item = this.shiftCommand(reply);
@@ -243,7 +248,8 @@ function fillUnsubCommand(command: ICommand, count: number) {
     (command as any).remainReplies = command.args.length;
   }
   if ((command as any).remainReplies === 0) {
-    if (count === 0) {
+    // fix ioredis#1643 by qii404, unsub failed when stringNumbers is true
+    if (count == 0) {
       command.resolve(count);
       return true;
     }
